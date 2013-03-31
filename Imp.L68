@@ -1,0 +1,32 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.12.25
+Created On: 3/31/2013 9:46:18 PM
+
+00000000                             1  
+00000200                             2      ORG    $0200
+00000200                             3  main
+00000200  45F8 0200                  4      LEA     main,A2
+00000204  47F9 0000021A              5      LEA     EndProgram,A3
+0000020A  223C 00000316              6      move.l  #790,D1
+00000210                             7  StartLoop
+00000210  26DA                       8      move.l  (A2)+,(A3)+
+00000212  5341                       9      subq    #$1,D1
+00000214  4A81                      10      tst.l   D1
+00000216  66F8                      11      bne     StartLoop
+00000218  4E71                      12      nop
+0000021A                            13  EndProgram
+0000021A                            14  
+0000021A                            15  
+Line 16 WARNING: Address expected
+0000021A                            16      END
+
+No errors detected
+1 warning generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+ENDPROGRAM          21A
+MAIN                200
+STARTLOOP           210

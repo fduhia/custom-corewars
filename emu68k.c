@@ -64,7 +64,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <malloc.h>
+//#include <malloc.h> replaced with stdlib.h
+#include <stdlib.h>
 #include <dos.h>
 #include <conio.h>
 #include "68defs.h"
@@ -129,6 +130,7 @@ main(int argc, char *argv[])
      } while (com != 'Q');
 }
 
+/*
 void int21h()
 {
 	union REGS inregs, outregs;
@@ -168,6 +170,8 @@ void int21h()
 //      a_reg[2] = (a_reg[2] & 0xffff0000) | segregs.es;
 //      a_reg[3] = (a_reg[3] & 0xffff0000) | segregs.ss;
 }
+*/
+
 
 void show_help()
 {
@@ -414,7 +418,7 @@ void enter()
 void init_data()
 {
 	unsigned count = 0xffff;
-	struct SREGS segregs;
+//	struct SREGS segregs;
 
      pc = 0;
      loadX(1);
@@ -429,7 +433,8 @@ void init_data()
 
      if( (pbuf = (unsigned char *)malloc( (size_t)count )) == NULL )
      {
-      count = _memmax();
+ //     count = _memmax();
+		count = 0xfff7;
 //        count = coreleft();
 
      if( (pbuf = (unsigned char *)malloc( (size_t)count )) == NULL )
@@ -1998,8 +2003,8 @@ void type8(int trapnum)    /* TRAP */
 	case 9: printf("Program exit at address %08lX\n",pc-2);
 		stopem = TRUE;
 		break;
-	case 10:int21h();       //8.17.97
-		break;
+//	case 10:int21h();       //8.17.97
+//		break;
 	default:printf("TRAP  #%1X not implemented.\n",trapnum);
 		break;
 	}
