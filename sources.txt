@@ -1,0 +1,30 @@
+COM68K / ASM68K / EMU68K Source Code
+
+November 30, 2002 
+
+This software is distributed with the intent that students and/or instructors
+be able to make their own corrections or modifications as they see fit. The
+code for ASM68K and EMU68K was written long ago when I was not yet an
+experienced C programmer. I did lots of things the hard way. You will also
+notice my lack of comments. COM68K is a newer application, but also has
+minimal comments. Even so, I hope someone out there finds this code useful.
+If you do modify the code, I would appreciate a copy via email at
+
+antonakos_j@sunybroome.edu.
+
+And remember: James L. Antonakos and Prentice Hall are not responsible for 
+anything that is done with existing or modified versions of this software
+release.
+
+The Source Code
+
+For ASM68K, you need: ASM68K.C and ASM.H
+
+For EMU68K, you need: EMU68K.C and 68DEFS.H
+
+For COM68K, you need: COM68K.C
+
+All files compile using Borland C++ V3.1. Modifications to the memory
+allocation code (and possibly other pieces) will be required when porting to
+a different compiler.
+
