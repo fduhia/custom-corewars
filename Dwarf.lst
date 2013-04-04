@@ -1,0 +1,17 @@
+680x0 MACRO ASSEMBLER   Version 5.00   (c) 1992-2005 Peter J. Fondse
+
+Date: 04 Apr 2013      Time: 16:49:11          Source: C:\IDE68K\EXAMPLES\DWARF.ASM
+
+00000200               1              ORG         $0200
+                       2   
+                       3   START
+00000200  4E4A         4   main       TRAP        #10
+00000202  0880 0000    5   	bclr	#$0,D0
+00000206  2240         6   	move.l	D0,A1
+00000208  22BC 0000    7   	move.l	#$FFFF,(A1)
+0000020C  FFFF      
+0000020E  60F0         8   	bra	main
+                       9   
+          0000 0200   10              END         START
+
+Assembly errors: 0

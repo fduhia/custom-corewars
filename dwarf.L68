@@ -1,0 +1,25 @@
+00000200 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.12.25
+Created On: 4/4/2013 5:11:41 PM
+
+00000200                             1             ORG         $0200
+00000200                             2  
+00000200                             3  START
+00000200                             4  
+00000200  4E4A                       5  HERE        TRAP        #10
+00000202  0880 0000                  6              bclr        #$0,D0
+00000206  2240                       7              move.l      D0,A1
+00000208  22BC 0000FFFF              8              move.l      #$FFFF,(A1)
+0000020E  4EB8 0200                  9              JSR         HERE
+00000212                            10  
+00000212                            11             END         START
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+HERE                200
+START               200

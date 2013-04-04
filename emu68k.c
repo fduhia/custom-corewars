@@ -13,12 +13,16 @@
 #include <conio.h>
 #include "68defs.h"
 #include "srecord.h"
+#include <time.h>
 
 void loadX(int exp);
 void loadN(int exp);
 void loadZ(int exp);
 void loadV(int exp);
 void loadC(int exp);
+void save_context(int cont_num);				//save cpu context
+void load_context(int cont_num);				//load cpu context
+void execute_single();				//Single instruction execution
 
      struct ucode icode;
      char isize, ops[32], tops[32];
@@ -37,6 +41,21 @@ void loadC(int exp);
 	4, // S9
 };
 
+/**
+ * Structure to hold warrior cpu context
+ */	
+struct Cpucontext
+{
+	unsigned long int data_reg[8];  //= {0,0,0,0,0,0,0,0};
+    unsigned long int address_reg[8];  // = {0,0,0,0,0,0,0,0xff0};
+	long int pcounter;
+    int sreg;
+    unsigned char wXflag, wNflag, wZflag, wVflag, wCflag;
+};
+
+struct Cpucontext contexts[100];
+
+
 int main(int argc, char *argv[])
 {
      char com;
@@ -49,6 +68,10 @@ int main(int argc, char *argv[])
 	 uint32_t staddress[100][100];
 	 int Numwarr=0;
 	 int wNum=0;
+	 char exit_code;
+	 int cycles;
+	 
+	
 	 
 
 
@@ -61,6 +84,10 @@ int main(int argc, char *argv[])
 
 	printf("Enter Number of warriors: \n");
 		scanf ("%d",&Numwarr);
+		
+	printf("Enter Number of of execution cycles: \n");
+		scanf ("%d",&cycles);	
+		
 
 while(wNum < Numwarr)
 {
@@ -114,19 +141,39 @@ while(wNum < Numwarr)
 
 				record_count++;
 			}
-			printf("starting pc is: %x \n",staddress[wNum][wNum]);
+			printf("starting pc is: %x \n",staddress[wNum][0]);
+			
+			
+			     for(int loader = 0; loader < Numwarr; loader++)
+     {
+	 contexts[loader].pcounter = staddress[loader][0] ;
+     }
+			
 			
 			wNum++;
 }
+			
+			
+//			Cpucontext* contexts = malloc(sizeof (contexts) * Numwarr);
 				
-					
+//			Cpucontext contexts[Numwarr];	
 
 		
 		
 		do
 		{
 		
-			gets(cmd);
+				
+				for (int running = 0; running < Numwarr; running++)
+				{
+//				Cpucontext contexts = {d_reg[reg]d_reg[reg]};
+				load_context(running);
+				execute_single();
+				save_context(running);
+				}
+				
+				cycles--;
+/*			gets(cmd);
 			cptr = 0;
 			skipblank();
 			com = toupper(cmd[cptr]);
@@ -155,12 +202,94 @@ while(wNum < Numwarr)
 	       case '\0': break;
 	       default  : printf("Unknown command %s\n",cmd);
 	  }
+*/
 	  
-		}while (com != 'Q');
-
+		}	while((cycles > 0) && !stopem);
+	
+		
+		scanf ("%s",exit_code);
+		if(exit_code == 'Q')
 		return 0;
 }
 
+void int21h()
+{
+
+unsigned long int inregs;
+		srand ( time(NULL) );
+		inregs = rand();
+  
+		d_reg[0] = (d_reg[0] & 0xffff0000) | inregs;
+
+}
+
+void save_context(int cont_num)
+{
+
+     int reg;
+
+     for(reg = 0; reg <= 7; reg++)
+     {
+	 contexts[cont_num].data_reg[reg] = d_reg[reg];
+	 contexts[cont_num].address_reg[reg] = a_reg[reg];
+     }
+   
+	 contexts[cont_num].pcounter = pc;
+	 contexts[cont_num].sreg = sr;
+	 contexts[cont_num].wXflag = XF;
+	 contexts[cont_num].wNflag = NF;
+	 contexts[cont_num].wNflag = ZF;
+	 contexts[cont_num].wZflag = VF;
+	 contexts[cont_num].wCflag = CF;
+
+}
+
+void load_context(int cont_num)
+{
+
+     int reg;
+
+     for(reg = 0; reg <= 7; reg++)
+     {
+		d_reg[reg] = contexts[cont_num].data_reg[reg];
+		a_reg[reg] = contexts[cont_num].address_reg[reg];
+     }
+   
+	 pc = contexts[cont_num].pcounter;
+	 sr = contexts[cont_num].sreg;
+	 Xflag = contexts[cont_num].wXflag;
+	 Nflag = contexts[cont_num].wNflag;
+	 Zflag = contexts[cont_num].wNflag;
+	 Vflag = contexts[cont_num].wZflag;
+	 Cflag = contexts[cont_num].wCflag;
+	
+}
+
+
+void execute_single()
+{
+	int num;
+
+//pc = tohex(&cmd[cptr]) & 0xffffff;
+
+//	if ('\0' != cmd[cptr])
+	num = 1;
+	stopem = FALSE;
+	while((num > 0) && !stopem)
+	{
+		fetch(EX);
+		disp_reg();
+		num--;
+		/*
+		if (kbhit())          //2.27.98
+		{
+			kyb = getch();
+			if (kyb == 0x15)
+				break;
+		}
+		*/
+	}
+}
 
 
 void show_help()
@@ -2165,8 +2294,8 @@ void type8(int trapnum)    /* TRAP */
 	case 9: printf("Program exit at address %08lX\n",pc-2);
 		stopem = TRUE;
 		break;
-//	case 10:int21h();       //8.17.97
-//		break;
+	case 10:int21h();       //8.17.97
+		break;
 	default:printf("TRAP  #%1X not implemented.\n",trapnum);
 		break;
 	}
