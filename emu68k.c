@@ -1,65 +1,8 @@
-// V4.1 8.12.03  Added temporary breakpoints, changed TRAP #1 and TRAP #3
-//               to output ASCII codes without restriction.
-//
-// V4.0 2.15.03  Cleanup. No functional changes.
-//
-// V3.2 11.28.98 Fixed flag updates in ANDI, SUBI, CMPI, ADD, SUBQ
-//               ADD, SUB
 
-// V3.11 3.3.98  Changed Dump command to start at hexfile pc.
-
-// V3.1 3.1.98   Updated the help menu.
-//               Changed U command to unassemble at initial load PC.
-//               Fixed S0 record display when loading hexfile.
-//               Added help message at startup.
-//               Changed the way unassemble displays everything.
-
-// V3.02 2.27.98 Added , to the U and T commands.
-//                      along with a ^U bailout.
-
-// V3.01 2.14.98 Modified the U command to retain last address
-//               Fixed flag behavior in ADD (type 201)
-//               Added date to signon message
-//               Modified the E command to start at $400
-//                      and quit when any illegal key is hit
-//               Modified D command to allow number of lines to disp
-
-// V3.00 8.17.97 Added DOS interrupt capability via TRAP #10
-//               Added author identification command
-//
-//
-// V2.10 2.4.97 Modified RAM to 64 KB by adding malloc'd block.
-//              Fixed pc change in unas().
-//              Changed breakpoint operation (disabled for
-//                   tracing)
-//              Fixed flag behavior in CMPM.
-//              Fixed dis-asm of CMPM during go.
-
-// V2.9 11.4.96 Fixed MOVEQ instruction (always displays D0)
-//              Fixed unassemble bug in MOVE inst.
-
-// V2.8 10.1.96 Added unassemble command
-
-// V2.7 9.30.96 Fixed ABCD (via rewritten daa() function)
-
-// V2.6 9.18.96 Added HEX command
-//              Updated ENTER command to allow data skips
-//              Added ASCII dump to DUMP command
-
-// V2.5 9.17.96 Fixed MOVEM storage order when -(An) used.
-//              Added block-fill command.
-//              Added multiple breakpoints to bkpt command.
-
-/* V2.4 9.11.96 Fixed -offset problem with LINK */
-/*              Added starting address display */
-
-/* V2.3 9.9.96 Added breakpoint feature */
-
-/* V2.2 8.26.96 Fixed problem with zero-length S records. */
-
-/* 68000 Simulator */
-/* V2.1 First Version */
-/* c1995 James L. Antonakos */
+/*Custom Corewars for Motorola 68000*/
+/* v1.0 */
+/* Based on emu68k 68000 simulator*/
+/* by James L. Antonakos */
 
 #include <stdio.h>
 #include <string.h>
@@ -69,6 +12,7 @@
 #include <dos.h>
 #include <conio.h>
 #include "68defs.h"
+#include "srecord.h"
 
 void loadX(int exp);
 void loadN(int exp);
@@ -80,34 +24,118 @@ void loadC(int exp);
      char isize, ops[32], tops[32];
      int mw;
 
+	 static int SRecord_Address_Lengths[] = {
+	4, // S0
+	4, // S1
+	6, // S2
+	8, // S3
+	8, // S4
+	4, // S5
+	6, // S6
+	8, // S7
+	6, // S8
+	4, // S9
+};
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
      char com;
+	 char close;
+	 FILE *fp;
+	 char fname2[20];
+	 fname2[0] = '\0';
+	 const char * fileread;
+	 SRecord srec;
+	 uint32_t staddress[100][100];
+	 int Numwarr=0;
+	 int wNum=0;
+	 
 
-     printf("68000 Emulator V4.1, 8/12/03\n");
+
+     printf("Custom Corewars V1.0, 26/4/2013\n");
      init_data();
-     if (argc > 1)
-     {
-	cptr = 0;
-	cmd[0] = '\0';
-	strcat(cmd,argv[1]);
-	load_hexfile();
-     }
+	 
+	 
      printf("Enter '?' for help\n");
 //     printf("Use 0x%04X for all DOS segment addresses.\n",FP_SEG(pbuf));
-     do
-     {
-	  printf("-");
-	  gets(cmd);
-	  cptr = 0;
-	  skipblank();
-	  com = toupper(cmd[cptr]);
-	  cptr++;
-	  skipblank();
-	  switch(com)
+
+	printf("Enter Number of warriors: \n");
+		scanf ("%d",&Numwarr);
+
+while(wNum < Numwarr)
+{
+	printf("Enter warrior name: \n");
+//	fname2 = getchar();
+	scanf ("%s",fname2);
+	printf("Warrior name is: \n",fname2);
+	int record_count = 0;
+
+
+			fp = fopen(fname2,"r");
+
+					while (Read_SRecord(&srec, fp) == SRECORD_OK) 
+			 {
+				//recordCount++;
+                //dataByteSum += srec.dataLen;
+				Print_SRecord(&srec);
+				
+
+				
+				
+				printf("\n");
+				
+				for (unsigned long int mData = 0; mData < srec.dataLen; mData++)
+				{
+					unsigned long int effA, myaddr;
+					myaddr = srec.address + mData;
+//					staddress[mData] = srec.address;
+					staddress[wNum][record_count] = srec.address;
+//				printf("starting pc is: %x \n",staddress[mData]);
+
+//					effA = myaddr & 0xffff;
+					effA = myaddr;
+							if (mData+1 < srec.dataLen)
+//			printf("0x%02X, ", srec->data[i]);
+					(pbuf)[effA] = srec.data[mData];
+//					printf("starting pc is: %x",srec.address);
+					
+					
+				}
+//				(pbuf)[ea] = srcbyte;
+//				(pbuf)[srec.address] = srcbyte;
+				
+//				for (int mData = 0; mData < srec.dataLen; mData++) 
+//			{
+//				if (mData+1 < srec.dataLen)
+//				(pbuf)[srec.address] = srec.data[mData];
+//				printf("0x%02X, ", srec.data[mData]);
+//				else
+//				printf("0x%02X", srec.data[mData]);
+
+				record_count++;
+			}
+			printf("starting pc is: %x \n",staddress[wNum][wNum]);
+			
+			wNum++;
+}
+				
+					
+
+		
+		
+		do
+		{
+		
+			gets(cmd);
+			cptr = 0;
+			skipblank();
+			com = toupper(cmd[cptr]);
+			cptr++;
+			skipblank();
+		
+		switch(com)
 	  {
-	       case 'A' : printf("Written by James L. Antonakos, EET Dept., Broome CC\n");
+	       case 'A' : printf("Based on Motorola 68000 emulator by James L. Antonakos CC\n");
 		printf("email: antonakos_j@sunybroome.edu for questions/comments\n");
 		printf("http://www.sunybroome.edu/~antonakos_j for new version downloads\n");
 			break;
@@ -127,50 +155,12 @@ main(int argc, char *argv[])
 	       case '\0': break;
 	       default  : printf("Unknown command %s\n",cmd);
 	  }
-     } while (com != 'Q');
+	  
+		}while (com != 'Q');
+
+		return 0;
 }
 
-/*
-void int21h()
-{
-	union REGS inregs, outregs;
-	struct SREGS segregs;
-
-	//call DOS INT
-	inregs.x.ax = d_reg[0] & 0xffff;
-	inregs.x.bx = d_reg[1] & 0xffff;
-	inregs.x.cx = d_reg[2] & 0xffff;
-	inregs.x.dx = d_reg[3] & 0xffff;
-	inregs.x.si = d_reg[4] & 0xffff;
-	inregs.x.di = d_reg[5] & 0xffff;
-
-//      segregs.cs = a_reg[0] & 0xffff;
-//      segregs.ds = a_reg[1] & 0xffff;
-//      segregs.es = a_reg[2] & 0xffff;
-//      segregs.ss = a_reg[3] & 0xffff;
-//      intdos( &inregs, &outregs );
-
-	int86(d_reg[7] & 0xff, &inregs, &outregs);
-
-//      inregs.h.ah = 0x9;
-//      inregs.x.dx = FP_OFF( buffer );
-//      segregs.ds = FP_SEG( pbuf );
-//      intdosx( &inregs, &outregs, &segregs );
-//      segread(&segregs);
-
-	d_reg[0] = (d_reg[0] & 0xffff0000) | outregs.x.ax;
-	d_reg[1] = (d_reg[1] & 0xffff0000) | outregs.x.bx;
-	d_reg[2] = (d_reg[2] & 0xffff0000) | outregs.x.cx;
-	d_reg[3] = (d_reg[3] & 0xffff0000) | outregs.x.dx;
-	d_reg[4] = (d_reg[4] & 0xffff0000) | outregs.x.si;
-	d_reg[5] = (d_reg[5] & 0xffff0000) | outregs.x.di;
-
-//      a_reg[0] = (a_reg[0] & 0xffff0000) | segregs.cs;
-//      a_reg[1] = (a_reg[1] & 0xffff0000) | segregs.ds;
-//      a_reg[2] = (a_reg[2] & 0xffff0000) | segregs.es;
-//      a_reg[3] = (a_reg[3] & 0xffff0000) | segregs.ss;
-}
-*/
 
 
 void show_help()
@@ -615,17 +605,172 @@ unsigned char getbyte(void)
 	chksum += dbyte;
 }
 
+/* Utility function to read an S-Record from a file */
+int Read_SRecord(SRecord *srec, FILE *in) {
+	char recordBuff[SRECORD_RECORD_BUFF_SIZE];
+	/* A temporary buffer to hold ASCII hex encoded data, set to the maximum length we would ever need */
+	char hexBuff[SRECORD_MAX_ADDRESS_LEN+1];
+	int asciiAddressLen, asciiDataLen, dataOffset, fieldDataCount, i;
+
+	/* Check our record pointer and file pointer */
+	if (srec == NULL || in == NULL)
+		return SRECORD_ERROR_INVALID_ARGUMENTS;
+
+	if (fgets(recordBuff, SRECORD_RECORD_BUFF_SIZE, in) == NULL) {
+			/* In case we hit EOF, don't report a file error */
+			if (feof(in) != 0)
+				return SRECORD_ERROR_EOF;
+			else
+				return SRECORD_ERROR_FILE;
+	}
+	/* Null-terminate the string at the first sign of a \r or \n */
+	for (i = 0; i < (int)strlen(recordBuff); i++) {
+		if (recordBuff[i] == '\r' || recordBuff[i] == '\n') {
+			recordBuff[i] = 0;
+			break;
+		}
+	}
+
+	/* Check if we hit a newline */
+	if (strlen(recordBuff) == 0)
+		return SRECORD_ERROR_NEWLINE;
+
+	/* Size check for type and count fields */
+	if (strlen(recordBuff) < SRECORD_TYPE_LEN + SRECORD_COUNT_LEN)
+		return SRECORD_ERROR_INVALID_RECORD;
+
+	/* Check for the S-Record start code at the beginning of every record */
+	if (recordBuff[SRECORD_START_CODE_OFFSET] != SRECORD_START_CODE)
+		return SRECORD_ERROR_INVALID_RECORD;
+
+	/* Copy the ASCII hex encoding of the type field into hexBuff, convert it into a usable integer */
+	strncpy(hexBuff, recordBuff+SRECORD_TYPE_OFFSET, SRECORD_TYPE_LEN);
+	hexBuff[SRECORD_TYPE_LEN] = 0;
+	srec->type = strtol(hexBuff, (char **)NULL, 16);
+
+	/* Copy the ASCII hex encoding of the count field into hexBuff, convert it to a usable integer */
+	strncpy(hexBuff, recordBuff+SRECORD_COUNT_OFFSET, SRECORD_COUNT_LEN);
+	hexBuff[SRECORD_COUNT_LEN] = 0;
+	fieldDataCount = strtol(hexBuff, (char **)NULL, 16);
+
+	/* Check that our S-Record type is valid */
+	if (srec->type < SRECORD_TYPE_S0 || srec->type > SRECORD_TYPE_S9)
+		return SRECORD_ERROR_INVALID_RECORD;
+	/* Get the ASCII hex address length of this particular S-Record type */
+	asciiAddressLen = SRecord_Address_Lengths[srec->type];
+
+	/* Size check for address field */
+	if (strlen(recordBuff) < (unsigned int)(SRECORD_ADDRESS_OFFSET+asciiAddressLen))
+		return SRECORD_ERROR_INVALID_RECORD;
+
+	/* Copy the ASCII hex encoding of the count field into hexBuff, convert it to a usable integer */
+	strncpy(hexBuff, recordBuff+SRECORD_ADDRESS_OFFSET, asciiAddressLen);
+	hexBuff[asciiAddressLen] = 0;
+	srec->address = strtol(hexBuff, (char **)NULL, 16);
+
+	/* Compute the ASCII hex data length by subtracting the remaining field lengths from the S-Record
+	 * count field (times 2 to account for the number of characters used in ASCII hex encoding) */
+	asciiDataLen = (fieldDataCount*2) - asciiAddressLen - SRECORD_CHECKSUM_LEN;
+	/* Bailout if we get an invalid data length */
+	if (asciiDataLen < 0 || asciiDataLen > SRECORD_MAX_DATA_LEN)
+		return SRECORD_ERROR_INVALID_RECORD;
+
+	/* Size check for final data field and checksum field */
+	if (strlen(recordBuff) < (unsigned int)(SRECORD_ADDRESS_OFFSET+asciiAddressLen+asciiDataLen+SRECORD_CHECKSUM_LEN))
+		return SRECORD_ERROR_INVALID_RECORD;
+
+	dataOffset = SRECORD_ADDRESS_OFFSET+asciiAddressLen;
+
+	/* Loop through each ASCII hex byte of the data field, pull it out into hexBuff,
+	 * convert it and store the result in the data buffer of the S-Record */
+	for (i = 0; i < asciiDataLen/2; i++) {
+		/* Times two i because every byte is represented by two ASCII hex characters */
+		strncpy(hexBuff, recordBuff+dataOffset+2*i, SRECORD_ASCII_HEX_BYTE_LEN);
+		hexBuff[SRECORD_ASCII_HEX_BYTE_LEN] = 0;
+		srec->data[i] = strtol(hexBuff, (char **)NULL, 16);
+	}
+	/* Real data len is divided by two because every byte is represented by two ASCII hex characters */
+	srec->dataLen = asciiDataLen/2;
+
+	/* Copy out the checksum ASCII hex encoded byte, and convert it back to a usable integer */
+	strncpy(hexBuff, recordBuff+dataOffset+asciiDataLen, SRECORD_CHECKSUM_LEN);
+	hexBuff[SRECORD_CHECKSUM_LEN] = 0;
+	srec->checksum = strtol(hexBuff, (char **)NULL, 16);
+
+	if (srec->checksum != Checksum_SRecord(srec))
+		return SRECORD_ERROR_INVALID_RECORD;
+
+	return SRECORD_OK;
+}
+
+
+/* Utility function to print the information stored in an S-Record */
+void Print_SRecord(const SRecord *srec) {
+	int i;
+	printf("S-Record Type: \t\tS%d\n", srec->type);
+	printf("S-Record Address: \t0x%2.8X\n", srec->address);
+	printf("S-Record Data: \t\t{");
+	for (i = 0; i < srec->dataLen; i++) {
+		if (i+1 < srec->dataLen)
+			printf("0x%02X, ", srec->data[i]);
+		else
+			printf("0x%02X", srec->data[i]);
+	}
+	printf("}\n");
+	printf("S-Record Checksum: \t0x%2.2X\n", srec->checksum);
+}
+
+uint8_t Checksum_SRecord(const SRecord *srec) {
+	uint8_t checksum;
+	int fieldDataCount, i;
+
+	/* Compute the record count, address and checksum lengths are halved because record count
+	 * is the number of bytes left in the record, not the length of the ASCII hex representation */
+	fieldDataCount = SRecord_Address_Lengths[srec->type]/2 + srec->dataLen + SRECORD_CHECKSUM_LEN/2;
+
+	/* Add the count, address, and data fields together */
+	checksum = fieldDataCount;
+	/* Add each byte of the address individually */
+	checksum += (uint8_t)(srec->address & 0x000000FF);
+	checksum += (uint8_t)((srec->address & 0x0000FF00) >> 8);
+	checksum += (uint8_t)((srec->address & 0x00FF0000) >> 16);
+	checksum += (uint8_t)((srec->address & 0xFF000000) >> 24);
+	for (i = 0; i < srec->dataLen; i++)
+		checksum += srec->data[i];
+
+	/* One's complement the checksum */
+	checksum = ~checksum;
+
+	return checksum;
+}
+
 void load_hexfile()
 {
 	int k;
 	unsigned char data, length, chkerr;
 	unsigned long int adr;
+//	FILE* fp;
+//	char fname2[20];
+	//make fptr NULL
+	fptr = NULL;
+//	fp = NULL;
 
 	chkerr = FALSE;
 	fname[0] = '\0';
+//	fname2[0] = '\0';
 	strcat(fname,&cmd[cptr]);
+//	strcat(fname2,&cmd[cptr]);
 	strcat(fname,".hex");
+	
 	fptr = fopen(fname,"r");
+//	fp = fopen(fname2,"r");
+//	SRecord srec;
+//	uint32_t staddress[100];
+	
+
+	
+
+
 	if (fptr == NULL)
 	{
 		printf("Error opening %s\n",fname);
@@ -650,6 +795,7 @@ void load_hexfile()
 						chksum = 0;
 						length = getbyte();
 						length -= 3;
+//						printf("sourcebyte is %d\n",length);   //check length
 						adr = getbyte();
 						adr <<= 8;
 						data = getbyte();
@@ -657,10 +803,12 @@ void load_hexfile()
 						while (length)  //was a do-loop
 						{		//0-length Srecord 8.26.96
 							srcbyte = getbyte();
+//							printf("sourcebyte is %d",adr);  //testing if anything is written
 							writemem(BYTE,adr);
 							adr++;
 							length--;
 						};
+						
 						getbyte(); /* read checksum */
 						if (chksum != 0xff)
 						{
@@ -668,6 +816,17 @@ void load_hexfile()
 							chkerr = TRUE;
 						}
 						fchr = getc(fptr);
+/*						
+						for (int wip = 0; wip < srec.dataLen; wip++)
+						{
+							if (wip+1 < srec.dataLen)
+							srcbyte = srec.data[wip];
+							adr = staddress[wip];
+							adr <<= 8;
+							printf("addr is 0x%02X,\n ", adr);
+							writemem(BYTE,adr);
+						}
+*/						
 						break;
 					}
 					case '9' :
@@ -687,6 +846,9 @@ void load_hexfile()
 							fchr = getc(fptr);
 						}
 						printf("Starting address: %04X\n", pc & 0xffff);
+//						long int loc = (pc & 0xffff);
+						long int loc = (pc);
+						printf("PC Location: %04X\n", loc);
 						break;
 					}
 				}
