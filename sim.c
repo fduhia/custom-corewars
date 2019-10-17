@@ -9,7 +9,6 @@
 #include <ctype.h>
 //#include <malloc.h> replaced with stdlib.h
 #include <stdlib.h>
-#include <dos.h>
 #include "stermp.h"
 #include "68defs.h"
 #include "srecord.h"
