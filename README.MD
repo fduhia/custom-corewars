@@ -3,11 +3,14 @@ A Corewars engine running the Motorola 68K instruction set. It is based on emu68
 an emulator written by James L. Antonakos.
 
 ### How to Build
-Just run make in your terminal
+```
+$ git clone https://github.com/fduhia/custom-corewars
+$ cd customer-corewars
+$ make
+```
 
 ### How to Run
-- In your terminal, execute:
 ```
-./sim
+$ ./sim
 ```
 - Sample warriors are included as *.hex files. Along with their assembly source code.
